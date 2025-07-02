@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local autoCollect = false
-local collectDelay = 1 -- Default delay
+local collectDelay = 1
 local partsToCollect = {"Apple", "Banana", "Kiwi", "Lemon", "Pizza", "Steak", "Strawberry", "Taco", "Watermelon"}
 
 -- GUI Setup
@@ -10,8 +10,8 @@ screenGui.Name = "ItemTeleportGui"
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 300, 0, 420)
-mainFrame.Position = UDim2.new(0, 100, 0.5, -200)
+mainFrame.Size = UDim2.new(0, 300, 0, 480)
+mainFrame.Position = UDim2.new(0, 100, 0.5, -240)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -109,7 +109,7 @@ autoButton.MouseButton1Click:Connect(function()
 	autoButton.Text = "Auto Collect: " .. (autoCollect and "ON" or "OFF")
 end)
 
--- Teleport buttons
+-- Teleport Buttons
 for i, itemName in ipairs(partsToCollect) do
 	local btn = Instance.new("TextButton", mainPage)
 	btn.Size = UDim2.new(1, -20, 0, 30)
@@ -127,6 +127,40 @@ for i, itemName in ipairs(partsToCollect) do
 		end
 	end)
 end
+
+-- +10 Coins Button
+local coinBtn = Instance.new("TextButton", mainPage)
+coinBtn.Size = UDim2.new(1, -20, 0, 30)
+coinBtn.Position = UDim2.new(0, 10, 0, 400)
+coinBtn.Text = "➕ +10 Coins"
+coinBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+coinBtn.TextColor3 = Color3.new(1, 1, 1)
+coinBtn.Font = Enum.Font.SourceSans
+coinBtn.TextSize = 18
+
+coinBtn.MouseButton1Click:Connect(function()
+	local stats = player:FindFirstChild("leaderstats")
+	if stats and stats:FindFirstChild("Coins") then
+		stats.Coins.Value += 10
+	end
+end)
+
+-- +1 Size Button
+local sizeBtn = Instance.new("TextButton", mainPage)
+sizeBtn.Size = UDim2.new(1, -20, 0, 30)
+sizeBtn.Position = UDim2.new(0, 10, 0, 440)
+sizeBtn.Text = "📏 +1 Size"
+sizeBtn.BackgroundColor3 = Color3.fromRGB(70, 90, 70)
+sizeBtn.TextColor3 = Color3.new(1, 1, 1)
+sizeBtn.Font = Enum.Font.SourceSans
+sizeBtn.TextSize = 18
+
+sizeBtn.MouseButton1Click:Connect(function()
+	local stats = player:FindFirstChild("leaderstats")
+	if stats and stats:FindFirstChild("Size") then
+		stats.Size.Value += 1
+	end
+end)
 
 -- SETTINGS PAGE
 local settingsPage = createPage("Settings")
@@ -168,10 +202,10 @@ resetBtn.MouseButton1Click:Connect(function()
 	delayLabel.Text = "⏱ Delay: " .. tostring(collectDelay) .. "s"
 end)
 
--- Start with Main
+-- Start with Main tab
 switchTab("Main")
 
--- Auto Collect Loop
+-- Auto Collect loop
 task.spawn(function()
 	while true do
 		if autoCollect and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
