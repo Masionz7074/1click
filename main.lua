@@ -2,11 +2,10 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local autoCollect = false
 local collectDelay = 1
-local partsToCollect = {"Apple", "Banana", "Kiwi", "Lemon", "Pizza", "Steak", "Strawberry", "Taco", "Watermelon"}
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "ItemTeleportGui"
+screenGui.Name = "PlayerTeleportGui"
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", screenGui)
@@ -17,17 +16,15 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
 
--- Title Bar
 local titleBar = Instance.new("TextLabel", mainFrame)
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-titleBar.Text = "🍉 Item Teleporter"
+titleBar.Text = "🧍 Player Teleporter"
 titleBar.TextColor3 = Color3.new(1, 1, 1)
 titleBar.Font = Enum.Font.SourceSansBold
 titleBar.TextSize = 20
 titleBar.BorderSizePixel = 0
 
--- Close Button
 local closeButton = Instance.new("TextButton", mainFrame)
 closeButton.Size = UDim2.new(0, 30, 0, 30)
 closeButton.Position = UDim2.new(1, -30, 0, 0)
@@ -41,21 +38,18 @@ closeButton.MouseButton1Click:Connect(function()
 	screenGui:Destroy()
 end)
 
--- Sidebar Tabs
 local tabButtons = Instance.new("Frame", mainFrame)
 tabButtons.Size = UDim2.new(0, 80, 1, -30)
 tabButtons.Position = UDim2.new(0, 0, 0, 30)
 tabButtons.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 tabButtons.BorderSizePixel = 0
 
--- Content Area
 local contentFrame = Instance.new("Frame", mainFrame)
 contentFrame.Size = UDim2.new(1, -80, 1, -30)
 contentFrame.Position = UDim2.new(0, 80, 0, 30)
 contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentFrame.BorderSizePixel = 0
 
--- Pages
 local pages = {}
 local function createPage(name)
 	local page = Instance.new("Frame", contentFrame)
@@ -67,14 +61,12 @@ local function createPage(name)
 	return page
 end
 
--- Tab switcher
 local function switchTab(tabName)
 	for name, page in pairs(pages) do
 		page.Visible = (name == tabName)
 	end
 end
 
--- Tab Button Maker
 local tabCount = 0
 local function addTabButton(tabName)
 	tabCount += 1
@@ -109,29 +101,48 @@ autoButton.MouseButton1Click:Connect(function()
 	autoButton.Text = "Auto Collect: " .. (autoCollect and "ON" or "OFF")
 end)
 
--- Teleport Buttons
-for i, itemName in ipairs(partsToCollect) do
-	local btn = Instance.new("TextButton", mainPage)
-	btn.Size = UDim2.new(1, -20, 0, 30)
-	btn.Position = UDim2.new(0, 10, 0, 50 + (i - 1) * 35)
-	btn.Text = "Go to " .. itemName
-	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.SourceSans
-	btn.TextSize = 18
-
-	btn.MouseButton1Click:Connect(function()
-		local part = workspace:FindFirstChild(itemName)
-		if part and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			player.Character.HumanoidRootPart.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+-- Player teleport buttons (dynamic)
+local function updatePlayerButtons()
+	for _, child in ipairs(mainPage:GetChildren()) do
+		if child:IsA("TextButton") and child.Name == "PlayerBtn" then
+			child:Destroy()
 		end
-	end)
+	end
+
+	local yOffset = 50
+	for _, target in ipairs(Players:GetPlayers()) do
+		if target ~= player then
+			local btn = Instance.new("TextButton", mainPage)
+			btn.Name = "PlayerBtn"
+			btn.Size = UDim2.new(1, -20, 0, 30)
+			btn.Position = UDim2.new(0, 10, 0, yOffset)
+			btn.Text = "Go to " .. target.Name
+			btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+			btn.TextColor3 = Color3.new(1, 1, 1)
+			btn.Font = Enum.Font.SourceSans
+			btn.TextSize = 18
+
+			btn.MouseButton1Click:Connect(function()
+				local char = target.Character
+				if char and char:FindFirstChild("HumanoidRootPart") then
+					player.Character.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)
+				end
+			end)
+
+			yOffset += 35
+		end
+	end
 end
+
+-- Update list initially and when players join/leave
+updatePlayerButtons()
+Players.PlayerAdded:Connect(updatePlayerButtons)
+Players.PlayerRemoving:Connect(updatePlayerButtons)
 
 -- +10 Coins Button
 local coinBtn = Instance.new("TextButton", mainPage)
 coinBtn.Size = UDim2.new(1, -20, 0, 30)
-coinBtn.Position = UDim2.new(0, 10, 0, 400)
+coinBtn.Position = UDim2.new(0, 10, 1, -70)
 coinBtn.Text = "➕ +10 Coins"
 coinBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
 coinBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -148,7 +159,7 @@ end)
 -- +1 Size Button
 local sizeBtn = Instance.new("TextButton", mainPage)
 sizeBtn.Size = UDim2.new(1, -20, 0, 30)
-sizeBtn.Position = UDim2.new(0, 10, 0, 440)
+sizeBtn.Position = UDim2.new(0, 10, 1, -35)
 sizeBtn.Text = "📏 +1 Size"
 sizeBtn.BackgroundColor3 = Color3.fromRGB(70, 90, 70)
 sizeBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -202,21 +213,19 @@ resetBtn.MouseButton1Click:Connect(function()
 	delayLabel.Text = "⏱ Delay: " .. tostring(collectDelay) .. "s"
 end)
 
--- Start with Main tab
 switchTab("Main")
 
--- Auto Collect loop
+-- Auto Teleport Loop (to all other players)
 task.spawn(function()
 	while true do
 		if autoCollect and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			for _, itemName in ipairs(partsToCollect) do
-				local part = workspace:FindFirstChild(itemName)
-				if part then
-					player.Character.HumanoidRootPart.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+			for _, target in ipairs(Players:GetPlayers()) do
+				if target ~= player and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+					player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)
 					task.wait(collectDelay)
 				end
 			end
 		end
-		task.wait(0.5)
+		task.wait(1)
 	end
 end)
